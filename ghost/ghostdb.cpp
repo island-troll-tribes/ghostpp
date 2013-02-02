@@ -147,6 +147,11 @@ CDBDotAPlayerSummary *CGHostDB :: DotAPlayerSummaryCheck( string name )
 	return NULL;
 }
 
+CDBITTPlayerSummary *CGHostDB :: ITTPlayerSummaryCheck( string name )
+{
+	return NULL;
+}
+
 string CGHostDB :: FromCheck( uint32_t ip )
 {
 	return "??";
@@ -272,6 +277,11 @@ CCallableDotAPlayerSummaryCheck *CGHostDB :: ThreadedDotAPlayerSummaryCheck( str
 	return NULL;
 }
 
+CCallableITTPlayerSummaryCheck *CGHostDB :: ThreadedITTPlayerSummaryCheck( string name )
+{
+	return NULL;
+}
+
 CCallableDownloadAdd *CGHostDB :: ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime )
 {
 	return NULL;
@@ -393,6 +403,11 @@ CCallableDotAPlayerAdd :: ~CCallableDotAPlayerAdd( )
 }
 
 CCallableDotAPlayerSummaryCheck :: ~CCallableDotAPlayerSummaryCheck( )
+{
+	delete m_Result;
+}
+
+CCallableITTPlayerSummaryCheck :: ~CCallableITTPlayerSummaryCheck( )
 {
 	delete m_Result;
 }
@@ -538,6 +553,20 @@ CDBDotAPlayerSummary :: CDBDotAPlayerSummary( string nServer, string nName, uint
 }
 
 CDBDotAPlayerSummary :: ~CDBDotAPlayerSummary( )
+{
+
+}
+
+//
+// CDBITTPlayerSummary
+//
+
+CDBITTPlayerSummary :: CDBITTPlayerSummary( string nServer, string nName, uint32_t nTotalGames, uint32_t nTotalWins, uint32_t nTotalLosses, uint32_t nTotalKills, uint32_t nTotalDeaths, uint32_t nTotalGold, uint32_t nMaxKills, uint32_t nMaxDeaths, uint32_t nMaxGold ) : m_Server( nServer ), m_Name( nName ), m_TotalGames( nTotalGames ), m_TotalWins( nTotalWins ), m_TotalLosses( nTotalLosses ), m_TotalKills( nTotalKills ), m_TotalDeaths( nTotalDeaths ), m_TotalGold( nTotalGold ), m_MaxKills( nMaxKills ), m_MaxDeaths( nMaxDeaths ), m_MaxGold( nMaxGold )
+{
+
+}
+
+CDBITTPlayerSummary :: ~CDBITTPlayerSummary( )
 {
 
 }

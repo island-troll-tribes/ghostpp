@@ -183,6 +183,9 @@ CBNET :: ~CBNET( )
 	for( vector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); ++i )
 		m_GHost->m_Callables.push_back( i->second );
 
+	for( vector<PairedIPSCheck> :: iterator i = m_PairedIPSChecks.begin( ); i != m_PairedIPSChecks.end( ); ++i )
+		m_GHost->m_Callables.push_back( i->second );
+
 	if( m_CallableAdminList )
 		m_GHost->m_Callables.push_back( m_CallableAdminList );
 
@@ -406,6 +409,42 @@ bool CBNET :: Update( void *fd, void *send_fd )
 			m_GHost->m_DB->RecoverCallable( i->second );
 			delete i->second;
 			i = m_PairedDPSChecks.erase( i );
+		}
+		else
+			++i;
+	}
+
+	for( vector<PairedIPSCheck> :: iterator i = m_PairedIPSChecks.begin( ); i != m_PairedIPSChecks.end( ); )
+	{
+		if( i->second->GetReady( ) )
+		{
+			CDBITTPlayerSummary *ITTPlayerSummary = i->second->GetResult( );
+
+			if( ITTPlayerSummary )
+			{
+				string Summary = m_GHost->m_Language->HasPlayedITTGamesWithThisBot(	i->second->GetName( ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalGames( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalWins( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalLosses( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalKills( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalDeaths( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalGold( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetMaxKills( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetMaxDeaths( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetMaxGold( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetAvgKills( ), 2 ),
+					UTIL_ToString( ITTPlayerSummary->GetAvgDeaths( ), 2 ),
+					UTIL_ToString( ITTPlayerSummary->GetAvgGold( ), 2 ),
+					UTIL_ToString( ITTPlayerSummary->GetWinPercent( ), 2 ));
+
+				QueueChatCommand( Summary, i->first, !i->first.empty( ) );
+			}
+			else
+				QueueChatCommand( m_GHost->m_Language->HasntPlayedITTGamesWithThisBot( i->second->GetName( ) ), i->first, !i->first.empty( ) );
+
+			m_GHost->m_DB->RecoverCallable( i->second );
+			delete i->second;
+			i = m_PairedIPSChecks.erase( i );
 		}
 		else
 			++i;
@@ -2094,6 +2133,23 @@ void CBNET :: BotCommand( string Message, string User, bool Whisper, bool ForceR
 
 			if( !StatsUser.empty( ) && StatsUser.size( ) < 16 && StatsUser[0] != '/' )
 				m_PairedDPSChecks.push_back( PairedDPSCheck( Whisper ? User : string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
+		}
+
+		//
+		// !STATSITT
+		// !SITT
+		// !SI
+		//
+
+		else if( Command == "statsitt" || Command == "sitt" || Command == "si" || Command == "ittstats" )
+		{
+			string StatsUser = User;
+
+			if( !Payload.empty( ) )
+				StatsUser = Payload;
+
+			if( !StatsUser.empty( ) && StatsUser.size( ) < 16 && StatsUser[0] != '/' )
+				m_PairedIPSChecks.push_back( PairedIPSCheck( Whisper ? User : string( ), m_GHost->m_DB->ThreadedITTPlayerSummaryCheck( StatsUser ) ) );
 		}
 
 		//

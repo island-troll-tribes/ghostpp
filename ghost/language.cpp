@@ -604,6 +604,33 @@ string CLanguage :: HasntPlayedDotAGamesWithThisBot( string user )
 	return Out;
 }
 
+string CLanguage :: HasPlayedITTGamesWithThisBot( string user, string totalgames, string totalwins, string totallosses, string totalkills, string totaldeaths, string totalgold, string maxkills, string maxdeaths, string maxgold, string avgkills, string avgdeaths, string avggold, string winpercent )
+{
+	string Out = m_CFG->GetString( "lang_0221", "lang_0221" );
+	UTIL_Replace( Out, "$USER$", user );
+	UTIL_Replace( Out, "$TOTALGAMES$", totalgames );
+	UTIL_Replace( Out, "$TOTALWINS$", totalwins );
+	UTIL_Replace( Out, "$TOTALLOSSES$", totallosses );
+	UTIL_Replace( Out, "$TOTALKILLS$", totalkills );
+	UTIL_Replace( Out, "$TOTALDEATHS$", totaldeaths );
+	UTIL_Replace( Out, "$TOTALGOLD$", totalgold );
+	UTIL_Replace( Out, "$MAXKILLS$", maxkills );
+	UTIL_Replace( Out, "$MAXDEATHS$", maxdeaths );
+	UTIL_Replace( Out, "$MAXGOLD$", maxgold );
+	UTIL_Replace( Out, "$AVGKILLS$", avgkills );
+	UTIL_Replace( Out, "$AVGDEATHS$", avgdeaths );
+	UTIL_Replace( Out, "$AVGGOLD$", avggold );
+	UTIL_Replace( Out, "$WINPERCENT$", winpercent );
+	return Out;
+}
+
+string CLanguage :: HasntPlayedITTGamesWithThisBot( string user )
+{
+	string Out = m_CFG->GetString( "lang_0222", "lang_0222" );
+	UTIL_Replace( Out, "$USER$", user );
+	return Out;
+}
+
 string CLanguage :: WasKickedForReservedPlayer( string reserved )
 {
 	string Out = m_CFG->GetString( "lang_0076", "lang_0076" );

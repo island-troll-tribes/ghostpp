@@ -372,6 +372,19 @@ CCallableDotAPlayerSummaryCheck *CGHostDBMySQL :: ThreadedDotAPlayerSummaryCheck
 	return Callable;
 }
 
+CCallableITTPlayerSummaryCheck *CGHostDBMySQL :: ThreadedITTPlayerSummaryCheck( string name )
+{
+  void *Connection = GetIdleConnection( );
+
+  if( !Connection )
+                ++m_NumConnections;
+
+  CCallableITTPlayerSummaryCheck *Callable = new CMySQLCallableITTPlayerSummaryCheck( name, Connection, m_BotID, m_Server, m_Database, m_User, m_Password, m_Port );
+  CreateThread( Callable );
+        ++m_OutstandingCallables;
+  return Callable;
+}
+
 CCallableDownloadAdd *CGHostDBMySQL :: ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime )
 {
 	void *Connection = GetIdleConnection( );
@@ -994,6 +1007,53 @@ CDBDotAPlayerSummary *MySQLDotAPlayerSummaryCheck( void *conn, string *error, ui
 	return DotAPlayerSummary;
 }
 
+CDBITTPlayerSummary *MySQLITTPlayerSummaryCheck( void *conn, string *error, uint32_t botid, string name )
+{
+  transform( name.begin( ), name.end( ), name.begin( ), (int(*)(int))tolower );
+  string EscName = MySQLEscapeString( conn, name );
+  CDBITTPlayerSummary *ITTPlayerSummary = NULL;
+  string Query = "SELECT SUM(CASE WHEN wp.flag != '' THEN 1 ELSE 0 END) AS 'games', SUM(CASE WHEN wp.flag = 'winner' THEN 1 ELSE 0 END) AS 'wins', SUM(CASE WHEN wp.flag = 'loser' THEN 1 ELSE 0 END) AS 'losses', SUM(wvk.value_int) AS 'kills', SUM(wvd.value_int) AS 'deaths', SUM(wvg.value_int) AS 'gold', MAX(wvk.value_int) AS 'max_kills', MAX(wvd.value_int) AS 'max_deaths', MAX(wvg.value_int) AS 'max_gold' FROM w3mmdplayers wp INNER JOIN w3mmdvars wvk ON wp.gameid = wvk.gameid AND  wp.pid = wvk.pid AND wvk.varname = 'kills' INNER JOIN w3mmdvars wvd ON wp.gameid = wvd.gameid AND  wp.pid = wvd.pid AND wvd.varname = 'deaths' INNER JOIN w3mmdvars wvg ON wp.gameid = wvg.gameid AND wp.pid = wvg.pid AND wvg.varname = 'gold' WHERE wp.name = '" + EscName + "' GROUP BY wp.name";
+
+  if( mysql_real_query( (MYSQL *)conn, Query.c_str( ), Query.size( ) ) != 0 )
+    *error = mysql_error( (MYSQL *)conn );
+  else
+  {
+    MYSQL_RES *Result = mysql_store_result( (MYSQL *)conn );
+
+    if( Result )
+    {
+      vector<string> Row = MySQLFetchRow( Result );
+
+      if( Row.size( ) == 9 )
+      {
+        uint32_t TotalGames = UTIL_ToUInt32( Row[0] );
+
+        if( TotalGames > 0 )
+        {
+          uint32_t TotalWins = UTIL_ToUInt32( Row[1] );
+          uint32_t TotalLosses = UTIL_ToUInt32( Row[2] );
+          uint32_t TotalKills = UTIL_ToUInt32( Row[3] );
+          uint32_t TotalDeaths = UTIL_ToUInt32( Row[4] );
+          uint32_t TotalGold = UTIL_ToUInt32( Row[5] );
+          uint32_t MaxKills = UTIL_ToUInt32( Row[6] );
+          uint32_t MaxDeaths = UTIL_ToUInt32( Row[7] );
+          uint32_t MaxGold = UTIL_ToUInt32( Row[8] );
+
+          ITTPlayerSummary = new CDBITTPlayerSummary( string( ), name, TotalGames, TotalWins, TotalLosses, TotalKills, TotalDeaths, TotalGold, MaxKills, MaxDeaths, MaxGold );
+        }
+      }
+      else
+        *error = "error checking ITTPlayerSummary [" + name + "] - row doesn't have 9 columns";
+
+      mysql_free_result( Result );
+    }
+    else
+      *error = mysql_error( (MYSQL *)conn );
+  }
+
+  return ITTPlayerSummary;
+}
+
 bool MySQLDownloadAdd( void *conn, string *error, uint32_t botid, string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime )
 {
 	bool Success = false;
@@ -1340,6 +1400,16 @@ void CMySQLCallableDotAPlayerSummaryCheck :: operator( )( )
 
 	if( m_Error.empty( ) )
 		m_Result = MySQLDotAPlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
+
+	Close( );
+}
+
+void CMySQLCallableITTPlayerSummaryCheck :: operator( )( )
+{
+	Init( );
+
+	if( m_Error.empty( ) )
+		m_Result = MySQLITTPlayerSummaryCheck( m_Connection, &m_Error, m_SQLBotID, m_Name );
 
 	Close( );
 }

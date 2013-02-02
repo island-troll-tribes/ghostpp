@@ -42,6 +42,7 @@ class CCallableGamePlayerSummaryCheck;
 class CCallableDotAGameAdd;
 class CCallableDotAPlayerAdd;
 class CCallableDotAPlayerSummaryCheck;
+class CCallableITTPlayerSummaryCheck;
 class CCallableDownloadAdd;
 class CCallableScoreCheck;
 class CCallableW3MMDPlayerAdd;
@@ -51,6 +52,7 @@ class CDBGame;
 class CDBGamePlayer;
 class CDBGamePlayerSummary;
 class CDBDotAPlayerSummary;
+class CDBITTPlayerSummary;
 
 typedef pair<uint32_t,string> VarP;
 
@@ -93,6 +95,7 @@ public:
 	virtual uint32_t DotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
 	virtual uint32_t DotAPlayerCount( string name );
 	virtual CDBDotAPlayerSummary *DotAPlayerSummaryCheck( string name );
+	virtual CDBITTPlayerSummary *ITTPlayerSummaryCheck( string name );
 	virtual string FromCheck( uint32_t ip );
 	virtual bool FromAdd( uint32_t ip1, uint32_t ip2, string country );
 	virtual bool DownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
@@ -121,6 +124,7 @@ public:
 	virtual CCallableDotAGameAdd *ThreadedDotAGameAdd( uint32_t gameid, uint32_t winner, uint32_t min, uint32_t sec );
 	virtual CCallableDotAPlayerAdd *ThreadedDotAPlayerAdd( uint32_t gameid, uint32_t colour, uint32_t kills, uint32_t deaths, uint32_t creepkills, uint32_t creepdenies, uint32_t assists, uint32_t gold, uint32_t neutralkills, string item1, string item2, string item3, string item4, string item5, string item6, string hero, uint32_t newcolour, uint32_t towerkills, uint32_t raxkills, uint32_t courierkills );
 	virtual CCallableDotAPlayerSummaryCheck *ThreadedDotAPlayerSummaryCheck( string name );
+	virtual CCallableITTPlayerSummaryCheck *ThreadedITTPlayerSummaryCheck( string name );
 	virtual CCallableDownloadAdd *ThreadedDownloadAdd( string map, uint32_t mapsize, string name, string ip, uint32_t spoofed, string spoofedrealm, uint32_t downloadtime );
 	virtual CCallableScoreCheck *ThreadedScoreCheck( string category, string name, string server );
 	virtual CCallableW3MMDPlayerAdd *ThreadedW3MMDPlayerAdd( string category, uint32_t gameid, uint32_t pid, string name, string flag, uint32_t leaver, uint32_t practicing );
@@ -468,6 +472,21 @@ public:
 	virtual string GetName( )								{ return m_Name; }
 	virtual CDBDotAPlayerSummary *GetResult( )				{ return m_Result; }
 	virtual void SetResult( CDBDotAPlayerSummary *nResult )	{ m_Result = nResult; }
+};
+
+class CCallableITTPlayerSummaryCheck : virtual public CBaseCallable
+{
+protected:
+	string m_Name;
+	CDBITTPlayerSummary *m_Result;
+
+public:
+	CCallableITTPlayerSummaryCheck( string nName ) : CBaseCallable( ), m_Name( nName ), m_Result( NULL ) { }
+	virtual ~CCallableITTPlayerSummaryCheck( );
+
+	virtual string GetName( )								{ return m_Name; }
+	virtual CDBITTPlayerSummary *GetResult( )				{ return m_Result; }
+	virtual void SetResult( CDBITTPlayerSummary *nResult )	{ m_Result = nResult; }
 };
 
 class CCallableDownloadAdd : virtual public CBaseCallable
@@ -832,6 +851,48 @@ public:
 	float GetAvgTowerKills( )			{ return m_TotalGames > 0 ? (float)m_TotalTowerKills / m_TotalGames : 0; }
 	float GetAvgRaxKills( )				{ return m_TotalGames > 0 ? (float)m_TotalRaxKills / m_TotalGames : 0; }
 	float GetAvgCourierKills( )			{ return m_TotalGames > 0 ? (float)m_TotalCourierKills / m_TotalGames : 0; }
+};
+
+//
+// CDBITTPlayerSummary
+//
+
+class CDBITTPlayerSummary
+{
+private:
+	string m_Server;
+	string m_Name;
+	uint32_t m_TotalGames;			// total number of dota games played
+	uint32_t m_TotalWins;			// total number of dota games won
+	uint32_t m_TotalLosses;			// total number of dota games lost
+	uint32_t m_TotalKills;			// total number of hero kills
+	uint32_t m_TotalDeaths;			// total number of deaths
+	uint32_t m_TotalGold;			// total number of creep kills
+	uint32_t m_MaxKills;			// total number of creep denies
+	uint32_t m_MaxDeaths;			// total number of assists
+	uint32_t m_MaxGold;				// total number of neutral kills
+
+public:
+	CDBITTPlayerSummary( string nServer, string nName, uint32_t nTotalGames, uint32_t nTotalWins, uint32_t nTotalLosses, uint32_t nTotalKills, uint32_t nTotalDeaths, uint32_t nTotalGold, uint32_t nMaxKills, uint32_t nMaxDeaths, uint32_t nMaxGold );
+	~CDBITTPlayerSummary( );
+
+	string GetServer( )					{ return m_Server; }
+	string GetName( )					{ return m_Name; }
+	uint32_t GetTotalGames( )			{ return m_TotalGames; }
+	uint32_t GetTotalWins( )			{ return m_TotalWins; }
+	uint32_t GetTotalLosses( )			{ return m_TotalLosses; }
+	uint32_t GetTotalKills( )			{ return m_TotalKills; }
+	uint32_t GetTotalDeaths( )			{ return m_TotalDeaths; }
+	uint32_t GetTotalGold( )			{ return m_TotalGold; }
+	uint32_t GetMaxKills( )				{ return m_MaxKills; }
+	uint32_t GetMaxDeaths( )			{ return m_MaxDeaths; }
+	uint32_t GetMaxGold( )				{ return m_MaxGold; }
+
+	float GetWinPercent( )				{ return m_TotalGames > 0 ? (float)m_TotalWins / m_TotalGames * 100 : 0; }
+	float GetAvgKills( )				{ return m_TotalGames > 0 ? (float)m_TotalKills / m_TotalGames : 0; }
+	float GetAvgDeaths( )				{ return m_TotalGames > 0 ? (float)m_TotalDeaths / m_TotalGames : 0; }
+	float GetAvgGold( )					{ return m_TotalGames > 0 ? (float)m_TotalGold / m_TotalGames : 0; }
+
 };
 
 #endif

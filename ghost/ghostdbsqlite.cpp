@@ -1206,6 +1206,12 @@ CDBDotAPlayerSummary *CGHostDBSQLite :: DotAPlayerSummaryCheck( string name )
 	return DotAPlayerSummary;
 }
 
+CDBITTPlayerSummary *CGHostDBSQLite :: ITTPlayerSummaryCheck( string name )
+{
+	CONSOLE_Print( "[SQLITE3] error: calling statsitt on a SQLITE database. Not implemented" );
+	return NULL;
+}
+
 string CGHostDBSQLite :: FromCheck( uint32_t ip )
 {
 	// a big thank you to tjado for help with the iptocountry feature
@@ -1603,6 +1609,14 @@ CCallableDotAPlayerSummaryCheck *CGHostDBSQLite :: ThreadedDotAPlayerSummaryChec
 {
 	CCallableDotAPlayerSummaryCheck *Callable = new CCallableDotAPlayerSummaryCheck( name );
 	Callable->SetResult( DotAPlayerSummaryCheck( name ) );
+	Callable->SetReady( true );
+	return Callable;
+}
+
+CCallableITTPlayerSummaryCheck *CGHostDBSQLite :: ThreadedITTPlayerSummaryCheck( string name )
+{
+	CCallableITTPlayerSummaryCheck *Callable = new CCallableITTPlayerSummaryCheck( name );
+	Callable->SetResult( ITTPlayerSummaryCheck( name ) );
 	Callable->SetReady( true );
 	return Callable;
 }

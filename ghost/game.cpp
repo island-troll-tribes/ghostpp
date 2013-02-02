@@ -116,6 +116,9 @@ CGame :: ~CGame( )
 	for( vector<PairedDPSCheck> :: iterator i = m_PairedDPSChecks.begin( ); i != m_PairedDPSChecks.end( ); ++i )
 		m_GHost->m_Callables.push_back( i->second );
 
+	for( vector<PairedIPSCheck> :: iterator i = m_PairedIPSChecks.begin( ); i != m_PairedIPSChecks.end( ); ++i )
+		m_GHost->m_Callables.push_back( i->second );
+
 	callablesLock.unlock( );
 
 	for( vector<CDBBan *> :: iterator i = m_DBBans.begin( ); i != m_DBBans.end( ); ++i )
@@ -284,6 +287,60 @@ bool CGame :: Update( void *fd, void *send_fd )
 			m_GHost->m_DB->RecoverCallable( i->second );
 			delete i->second;
 			i = m_PairedDPSChecks.erase( i );
+		}
+		else
+			++i;
+	}
+
+	for( vector<PairedIPSCheck> :: iterator i = m_PairedIPSChecks.begin( ); i != m_PairedIPSChecks.end( ); )
+	{
+		if( i->second->GetReady( ) )
+		{
+			CDBITTPlayerSummary *ITTPlayerSummary = i->second->GetResult( );
+
+			if( ITTPlayerSummary )
+			{
+				string Summary = m_GHost->m_Language->HasPlayedITTGamesWithThisBot(	i->second->GetName( ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalGames( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalWins( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalLosses( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalKills( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalDeaths( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetTotalGold( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetMaxKills( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetMaxDeaths( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetMaxGold( ) ),
+					UTIL_ToString( ITTPlayerSummary->GetAvgKills( ), 2 ),
+					UTIL_ToString( ITTPlayerSummary->GetAvgDeaths( ), 2 ),
+					UTIL_ToString( ITTPlayerSummary->GetAvgGold( ), 2 ),
+					UTIL_ToString( ITTPlayerSummary->GetWinPercent( ), 2 ));
+
+				if( i->first.empty( ) )
+					SendAllChat( Summary );
+				else
+				{
+					CGamePlayer *Player = GetPlayerFromName( i->first, true );
+
+					if( Player )
+						SendChat( Player, Summary );
+				}
+			}
+			else
+			{
+				if( i->first.empty( ) )
+					SendAllChat( m_GHost->m_Language->HasntPlayedITTGamesWithThisBot( i->second->GetName( ) ) );
+				else
+				{
+					CGamePlayer *Player = GetPlayerFromName( i->first, true );
+
+					if( Player )
+						SendChat( Player, m_GHost->m_Language->HasntPlayedITTGamesWithThisBot( i->second->GetName( ) ) );
+				}
+			}
+
+			m_GHost->m_DB->RecoverCallable( i->second );
+			delete i->second;
+			i = m_PairedIPSChecks.erase( i );
 		}
 		else
 			++i;
@@ -1719,6 +1776,28 @@ bool CGame :: EventPlayerBotCommand( CGamePlayer *player, string command, string
 			m_PairedDPSChecks.push_back( PairedDPSCheck( string( ), m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
 		else
 			m_PairedDPSChecks.push_back( PairedDPSCheck( User, m_GHost->m_DB->ThreadedDotAPlayerSummaryCheck( StatsUser ) ) );
+
+		player->SetStatsDotASentTime( GetTime( ) );
+	}
+
+	//
+	// !ITTSTATS
+	// !STATSITT
+	// !SITT
+	// !SI
+	//
+
+	else if( (Command == "statsitt" || Command == "sitt" || Command == "si" || Command == "ittstats" ) && GetTime( ) - player->GetStatsDotASentTime( ) >= 5 )
+	{
+		string StatsUser = User;
+
+		if( !Payload.empty( ) )
+			StatsUser = Payload;
+
+		if( player->GetSpoofed( ) && ( AdminCheck || RootAdminCheck || IsOwner( User ) ) )
+			m_PairedIPSChecks.push_back( PairedIPSCheck( string( ), m_GHost->m_DB->ThreadedITTPlayerSummaryCheck( StatsUser ) ) );
+		else
+			m_PairedIPSChecks.push_back( PairedIPSCheck( User, m_GHost->m_DB->ThreadedITTPlayerSummaryCheck( StatsUser ) ) );
 
 		player->SetStatsDotASentTime( GetTime( ) );
 	}

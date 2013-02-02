@@ -109,6 +109,8 @@ public:
 	string YourLoadingTimeWas( string loadingtime );
 	string HasPlayedDotAGamesWithThisBot( string user, string totalgames, string totalwins, string totallosses, string totalkills, string totaldeaths, string totalcreepkills, string totalcreepdenies, string totalassists, string totalneutralkills, string totaltowerkills, string totalraxkills, string totalcourierkills, string avgkills, string avgdeaths, string avgcreepkills, string avgcreepdenies, string avgassists, string avgneutralkills, string avgtowerkills, string avgraxkills, string avgcourierkills );
 	string HasntPlayedDotAGamesWithThisBot( string user );
+	string HasPlayedITTGamesWithThisBot( string user, string totalgames, string totalwins, string totallosses, string totalkills, string totaldeaths, string totalgold, string maxkills, string maxdeaths, string maxgold, string avgkills, string avgdeaths, string avggold, string winpercent );
+	string HasntPlayedITTGamesWithThisBot( string user );
 	string WasKickedForReservedPlayer( string reserved );
 	string WasKickedForOwnerPlayer( string owner );
 	string WasKickedByPlayer( string user );
