@@ -3,7 +3,7 @@ SYSTEM = $(shell uname)
 C++ = g++
 DFLAGS =
 OFLAGS = -O3
-LFLAGS = -lmysqlclient
+LFLAGS = -lmysqlclient -lboost_system
 CFLAGS =
 
 ifeq ($(SYSTEM),Darwin)
