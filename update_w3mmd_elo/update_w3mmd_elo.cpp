@@ -301,16 +301,11 @@ int main( int argc, char **argv )
 						rowids[num_players] = 0;
 
 					names[num_players] = Row[1];
+					servers[num_players] = Row[2];
 					elochangeids[num_players] = UTIL_ToUInt32( Row[8] );
 
 					if (servers[num_players].empty())
-					{
-					  servers[num_players] = string("useast.battle.net");
-					}
-					else
-					{
-					  servers[num_players] = Row[2];
-					}
+					  servers[num_players] = "useast.battle.net";
 
 					if( !Row[5].empty( ) )
 					{
