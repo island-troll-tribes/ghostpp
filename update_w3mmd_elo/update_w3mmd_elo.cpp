@@ -212,7 +212,7 @@ int main( int argc, char **argv )
 
 		// lowercase the name because there was a bug in GHost++ 13.3 and earlier that didn't automatically lowercase it when using MySQL
 
-		string QSelectPlayers = "SELECT w3mmd_elo_scores.id, LOWER(gameplayers.name), spoofedrealm, flag, practicing, score, w3mmdplayers.pid, w3mmdplayers.category, w3mmdplayers.id AS elochange_id FROM w3mmdplayers LEFT JOIN gameplayers ON gameplayers.gameid=w3mmdplayers.gameid AND gameplayers.name=w3mmdplayers.name LEFT JOIN w3mmd_elo_scores ON w3mmd_elo_scores.name=w3mmdplayers.name AND server=spoofedrealm AND w3mmd_elo_scores.category=w3mmdplayers.category WHERE w3mmdplayers.gameid=" + UTIL_ToString( GameID );
+		string QSelectPlayers = "SELECT w3mmd_elo_scores.id, LOWER(gameplayers.name), spoofedrealm, flag, practicing, score, w3mmdplayers.pid, w3mmdplayers.category, w3mmdplayers.id AS elochange_id FROM w3mmdplayers LEFT JOIN gameplayers ON gameplayers.gameid=w3mmdplayers.gameid AND gameplayers.name=w3mmdplayers.name LEFT JOIN w3mmd_elo_scores ON w3mmd_elo_scores.name=w3mmdplayers.name AND server=COALESCE(NULLIF(spoofedrealm, ''), 'useast.battle.net') AND w3mmd_elo_scores.category=w3mmdplayers.category WHERE w3mmdplayers.gameid=" + UTIL_ToString( GameID );
 
 		if( mysql_real_query( Connection, QSelectPlayers.c_str( ), QSelectPlayers.size( ) ) != 0 )
 		{
